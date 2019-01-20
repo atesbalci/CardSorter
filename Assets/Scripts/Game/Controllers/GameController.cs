@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Game.Models.Cards;
 using Game.Models.Data;
 using Game.Views.Cards;
@@ -9,6 +10,8 @@ namespace Game.Controllers
 {
     public class GameController : MonoBehaviour
     {
+        private const float DrawFrequency = 0.1f;
+
         public HandView HandView;
 
         private CardBatch _hand;
@@ -38,6 +41,8 @@ namespace Game.Controllers
 
         public void StartGame()
         {
+            StopAllCoroutines();
+
             var handAmt = _hand.Count;
             for (int i = 0; i < handAmt; i++)
             {
@@ -45,8 +50,14 @@ namespace Game.Controllers
                 _hand.RemoveAt(0);
             }
 
+            StartCoroutine(DrawCoroutine());
+        }
+
+        private IEnumerator DrawCoroutine()
+        {
             for (int i = 0; i < GameRules.CardsToDraw; i++)
             {
+                yield return new WaitForSeconds(DrawFrequency);
                 _hand.Add(_deck.RandomElementAndRemove());
             }
         }
