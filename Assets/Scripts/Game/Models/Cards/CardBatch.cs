@@ -12,7 +12,9 @@ namespace Game.Models.Cards
         /// </summary>
         private delegate IList<Card> GroupingMethod(IList<Card> cards, Card card);
 
+        public event Action<Card> OnAdd;
         public event Action OnChange;
+        public event Action<Card> OnRemove;
 
         private IList<Card> _cards;
 
@@ -72,6 +74,14 @@ namespace Game.Models.Cards
             OnChange?.Invoke();
         }
 
+        public void SwitchIndex(int from, int to)
+        {
+            var card = this[from];
+            _cards.RemoveAt(from);
+            _cards.Insert(to, card);
+            OnChange?.Invoke();
+        }
+
         #endregion
 
         #region IList Member Methods
@@ -89,6 +99,7 @@ namespace Game.Models.Cards
         public void Add(Card item)
         {
             _cards.Add(item);
+            OnAdd?.Invoke(item);
             OnChange?.Invoke();
         }
 
@@ -111,7 +122,11 @@ namespace Game.Models.Cards
         public bool Remove(Card item)
         {
             var retVal = _cards.Remove(item);
-            OnChange?.Invoke();
+            if (retVal)
+            {
+                OnRemove?.Invoke(item);
+                OnChange?.Invoke();
+            }
             return retVal;
         }
 
@@ -131,7 +146,9 @@ namespace Game.Models.Cards
 
         public void RemoveAt(int index)
         {
+            var card = _cards[index];
             _cards.RemoveAt(index);
+            OnRemove?.Invoke(card);
             OnChange?.Invoke();
         }
 
