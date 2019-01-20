@@ -14,7 +14,7 @@ namespace Game.Models.Data
         public static IList<Card> GetLargestSevenSevenSevenGroup(IList<Card> cards, Card card)
         {
             var retVal = cards.Where(c => c.CardNo == card.CardNo).ToList();
-            return retVal.Count >= 3 ? retVal : new List<Card>();
+            return retVal;
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Game.Models.Data
                 }
             }
             var retVal = candidates.GetRange(min, max - min + 1);
-            return retVal.Count >= 3 ? retVal : new List<Card>();
+            return retVal;
         }
 
         /// <summary>
