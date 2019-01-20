@@ -1,7 +1,9 @@
-﻿using Game.Models.Cards;
+﻿using System;
+using Game.Models.Cards;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Game.Views.Cards
 {
@@ -14,15 +16,37 @@ namespace Game.Views.Cards
         public Quaternion TargetRotation { get; set; }
         public bool Selected { get; set; }
 
-        [SerializeField] private TextMeshPro _cardTypeText;
+        [SerializeField] private SpriteRenderer _cardTypeRenderer;
         [SerializeField] private TextMeshPro _cardNoText;
+        [SerializeField] private Sprite[] _cardTypeSprites;
         private Card _card;
 
         public void Bind(Card card)
         {
             _card = card;
-            _cardNoText.text = _card.CardNo.ToString();
-            _cardTypeText.text = _card.CardType.ToString();
+            _cardTypeRenderer.sprite = _cardTypeSprites[(int)_card.CardType];
+            var color = (_card.CardType == CardType.Hearts || _card.CardType == CardType.Diamonds)
+                ? Color.red
+                : Color.black;
+            _cardNoText.color = color;
+            _cardTypeRenderer.color = color;
+            var cardNoText = ((int) _card.CardNo).ToString();
+            switch (_card.CardNo)
+            {
+                case CardNo.Ace:
+                    cardNoText = "A";
+                    break;
+                case CardNo.Jack:
+                    cardNoText = "J";
+                    break;
+                case CardNo.Queen:
+                    cardNoText = "Q";
+                    break;
+                case CardNo.King:
+                    cardNoText = "K";
+                    break;
+            }
+            _cardNoText.text = cardNoText;
         }
 
         private void Update()
