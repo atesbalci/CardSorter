@@ -53,6 +53,9 @@ namespace Game.Controllers
             StartCoroutine(DrawCoroutine());
         }
 
+        /// <summary>
+        /// Spawns the cards one by one.
+        /// </summary>
         private IEnumerator DrawCoroutine()
         {
             for (int i = 0; i < GameRules.CardsToDraw; i++)

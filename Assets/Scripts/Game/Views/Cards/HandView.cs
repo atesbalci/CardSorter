@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Game.Models.Cards;
 using Helpers.Vectors;
 using UnityEngine;
 
 namespace Game.Views.Cards
 {
+    /// <summary>
+    /// Observes the assigned hand card batch object and also has the ability to reorganize it.
+    /// </summary>
     [RequireComponent(typeof(RadialPlacer))]
     public class HandView : MonoBehaviour
     {
@@ -17,6 +19,7 @@ namespace Game.Views.Cards
         private Dictionary<Card, CardView> _cardViews;
         private RadialPlacer _radialPlacer;
         private Camera _camera;
+        private Card _selectedCard;
 
         public void Bind(CardBatch hand)
         {
@@ -27,33 +30,32 @@ namespace Game.Views.Cards
             _hand.OnAdd += OnAdd;
             _hand.OnChange += OnChange;
             _hand.OnRemove += OnRemove;
+            _radialPlacer.OnAdapt += OnChange;
         }
 
         private void Update()
         {
             var mousePos = (Vector2) _camera.ScreenToWorldPoint(Input.mousePosition);
-            var index = -1;
 
-            if (_radialPlacer.GetDistanceFromPerimeter(mousePos) < 1f)
+            if (Input.GetMouseButton(0) && _radialPlacer.GetDistanceFromPerimeter(mousePos) < 1f)
             {
-                index = _radialPlacer.GetIndex(mousePos, _hand.Count);
-                if(Input.GetMouseButton(0))
+                var index = _radialPlacer.GetIndex(mousePos, _hand.Count);
+                if (Input.GetMouseButtonDown(0))
                 {
-                    var selectedCardView = _cardViews.FirstOrDefault(kvp => kvp.Value.Selected);
-                    if (selectedCardView.Value != null)
+                    SelectedCard = _hand[index];
+                }
+                else if(SelectedCard != null)
+                {
+                    var selectedIndex = _hand.IndexOf(SelectedCard);
+                    if (selectedIndex != index)
                     {
-                        var selectedIndex = _hand.IndexOf(selectedCardView.Key);
-                        if (index >= 0 && index < _hand.Count && selectedIndex != index)
-                        {
-                            _hand.SwitchIndex(selectedIndex, index);
-                        }
+                        _hand.SwitchIndex(selectedIndex, index);
                     }
                 }
             }
-
-            for (int i = 0; i < _hand.Count; i++)
+            else
             {
-                _cardViews[_hand[i]].Selected = i == index;
+                SelectedCard = null;
             }
         }
 
@@ -62,6 +64,21 @@ namespace Game.Views.Cards
             _hand.OnAdd -= OnAdd;
             _hand.OnChange -= OnChange;
             _hand.OnRemove -= OnRemove;
+            if (_radialPlacer != null) _radialPlacer.OnAdapt -= OnChange;
+        }
+
+        private Card SelectedCard
+        {
+            get => _selectedCard;
+            set
+            {
+                if(_selectedCard == value) return;
+                _selectedCard = value;
+                foreach (var cardView in _cardViews)
+                {
+                    cardView.Value.Selected = cardView.Key == _selectedCard;
+                }
+            }
         }
 
         private void OnAdd(Card card)

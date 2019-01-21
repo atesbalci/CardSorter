@@ -4,6 +4,11 @@ using Game.Models.Cards;
 
 namespace Game.Models.Data
 {
+    /// <summary>
+    /// A static class containing static functions which will be used for card grouping an solving.
+    /// Does contain some amount of list reallocations but the extra memory consumption because 
+    /// of those would be negligible considering the lists they will be grouping will be relatively small.
+    /// </summary>
     public static class GroupingAlgorithms
     {
         #region 7-7-7 Grouping
@@ -14,7 +19,7 @@ namespace Game.Models.Data
         public static IList<Card> GetLargestSevenSevenSevenGroup(IList<Card> cards, Card card)
         {
             var retVal = cards.Where(c => c.CardNo == card.CardNo).ToList();
-            return retVal;
+            return retVal.Count >= 3 ? retVal : new List<Card>();
         }
 
         /// <summary>
@@ -76,7 +81,7 @@ namespace Game.Models.Data
                 }
             }
             var retVal = candidates.GetRange(min, max - min + 1);
-            return retVal;
+            return retVal.Count >= 3 ? retVal : new List<Card>();
         }
 
         /// <summary>
