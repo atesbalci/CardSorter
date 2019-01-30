@@ -1,18 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Game.Models.Cards;
 using UnityEngine;
 
 namespace Game.Views.Data
 {
     public class CardViewData
     {
-        public ReadOnlyCollection<Sprite> CardTypeSprites { get; }
-        public ReadOnlyCollection<Sprite> CardNoSprites { get; }
+        private readonly ReadOnlyCollection<Sprite> _cardTypeSprites;
+        private readonly ReadOnlyCollection<Sprite> _cardNoSprites;
 
         public CardViewData(IList<Sprite> cardTypeSprites, IList<Sprite> cardNoSprites)
         {
-            CardTypeSprites = new ReadOnlyCollection<Sprite>(cardTypeSprites);
-            CardNoSprites = new ReadOnlyCollection<Sprite>(cardNoSprites);
+            _cardTypeSprites = new ReadOnlyCollection<Sprite>(cardTypeSprites);
+            _cardNoSprites = new ReadOnlyCollection<Sprite>(cardNoSprites);
+        }
+
+        public Sprite GetCardTypeSprite(CardType cardType)
+        {
+            return _cardTypeSprites[(int) cardType - 1];
+        }
+
+        public Sprite GetCardNoSprite(CardNo cardNo)
+        {
+            return _cardNoSprites[(int) cardNo - 1];
         }
     }
 }

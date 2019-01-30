@@ -17,6 +17,8 @@ namespace Game.Views.Cards
 
         [SerializeField] private SpriteRenderer _cardTypeRenderer;
         [SerializeField] private SpriteRenderer _cardNoRenderer;
+        [SerializeField] private GameObject _idleCardBack;
+        [SerializeField] private GameObject _selectedCardBack;
         private Card _card;
         private CardViewData _cardViewData;
         private PositionAnglePair _target;
@@ -33,6 +35,8 @@ namespace Game.Views.Cards
         {
             _card = card;
             RefreshCardVisuals();
+            Selected = false;
+            RefreshSelected();
         }
 
         public PositionAnglePair Target
@@ -53,13 +57,14 @@ namespace Game.Views.Cards
                 if (_selected == value) return;
                 _selected = value;
                 RefreshTween();
+                RefreshSelected();
             }
         }
 
         private void RefreshCardVisuals()
         {
-            _cardTypeRenderer.sprite = _cardViewData.CardTypeSprites[(int) _card.CardType - 1];
-            _cardNoRenderer.sprite = _cardViewData.CardNoSprites[(int) _card.CardNo - 1];
+            _cardTypeRenderer.sprite = _cardViewData.GetCardTypeSprite(_card.CardType);
+            _cardNoRenderer.sprite = _cardViewData.GetCardNoSprite(_card.CardNo);
             var color = (_card.CardType == CardType.Hearts || _card.CardType == CardType.Diamonds)
                 ? Color.red
                 : Color.black;
@@ -73,6 +78,12 @@ namespace Game.Views.Cards
             _tween = DOTween.Sequence()
                 .Append(transform.DOMove(Target.Position + (Selected ? SelectedOffset * Vector3.up : Vector3.zero),
                     TweenDuration)).Join(transform.DORotate(new Vector3(0f, 0f, Target.Angle), TweenDuration));
+        }
+
+        private void RefreshSelected()
+        {
+            _idleCardBack.SetActive(!Selected);
+            _selectedCardBack.SetActive(Selected);
         }
 
         public class Pool : MonoMemoryPool<CardView> { }
