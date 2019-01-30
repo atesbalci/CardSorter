@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
-using System.Linq;
+using Game.Models;
 using Game.Models.Cards;
-using Game.Models.Data;
 using Game.Views.Cards;
 using Helpers.Utilities;
+using UniRx;
 using UnityEngine;
 
 namespace Game.Controllers
@@ -19,6 +19,7 @@ namespace Game.Controllers
         private CardBatch _fullDeck;
         private CardBatch _testCaseDeck;
         private CardBatch _lastUsedDeck;
+        private IDisposable _drawDisposable;
 
         private void Start()
         {
@@ -62,9 +63,8 @@ namespace Game.Controllers
         /// </summary>
         public void StartGame()
         {
-            StopAllCoroutines();
             ClearHand();
-            StartCoroutine(DrawCoroutine(_fullDeck));
+            Draw(_fullDeck);
         }
 
         /// <summary>
@@ -72,9 +72,8 @@ namespace Game.Controllers
         /// </summary>
         public void StartTestCase()
         {
-            StopAllCoroutines();
             ClearHand();
-            StartCoroutine(DrawCoroutine(_testCaseDeck));
+            Draw(_testCaseDeck);
         }
 
         private void ClearHand()
@@ -90,15 +89,21 @@ namespace Game.Controllers
         /// <summary>
         /// Spawns the cards one by one.
         /// </summary>
-        private IEnumerator DrawCoroutine(CardBatch deck)
+        private void Draw(CardBatch deck)
         {
+            _drawDisposable?.Dispose();
             _lastUsedDeck = deck;
             var cardsToDraw = Mathf.Min(GameRules.CardsToDraw, deck.Count);
-            for (int i = 0; i < cardsToDraw; i++)
+            var i = 0;
+            _drawDisposable = Observable.Interval(TimeSpan.FromSeconds(DrawFrequency)).Subscribe(l =>
             {
-                yield return new WaitForSeconds(DrawFrequency);
+                i++;
                 _hand.Add(deck.RandomElementAndRemove());
-            }
+                if (i >= cardsToDraw)
+                {
+                    _drawDisposable.Dispose();
+                }
+            });
         }
     }
 }

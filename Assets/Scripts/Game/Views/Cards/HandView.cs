@@ -2,6 +2,7 @@
 using Game.Models.Cards;
 using Helpers.Vectors;
 using UnityEngine;
+using Zenject;
 
 namespace Game.Views.Cards
 {
@@ -14,12 +15,18 @@ namespace Game.Views.Cards
         private const float PerIndexZOffset = -0.2f;
         private static readonly  Vector3 CardSpawnPos = new Vector3(0f, 10f, 0f);
 
-        [SerializeField] private CardView _cardPrefab;
         private CardBatch _hand;
         private Dictionary<Card, CardView> _cardViews;
         private RadialPlacer _radialPlacer;
         private Camera _camera;
         private Card _selectedCard;
+        private CardView.Pool _cardPool;
+
+        [Inject]
+        public void Initialize(CardView.Pool cardPool)
+        {
+            _cardPool = cardPool;
+        }
 
         public void Bind(CardBatch hand)
         {
@@ -83,8 +90,10 @@ namespace Game.Views.Cards
 
         private void OnAdd(Card card)
         {
-            var cardView = Instantiate(_cardPrefab, transform, false);
-            cardView.transform.position = CardSpawnPos;
+            var cardView = _cardPool.Spawn();
+            var cardTrans = cardView.transform;
+            cardTrans.SetParent(transform);
+            cardTrans.position = CardSpawnPos;
             _cardViews[card] = cardView;
             cardView.Bind(card);
         }
@@ -105,7 +114,7 @@ namespace Game.Views.Cards
         {
             var cardView = _cardViews[card];
             _cardViews.Remove(card);
-            Destroy(cardView.gameObject);
+            _cardPool.Despawn(cardView);
         }
 
         public void OneTwoThreeSort()

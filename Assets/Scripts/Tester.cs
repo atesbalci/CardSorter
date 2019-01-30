@@ -1,6 +1,6 @@
 ﻿using System.Text;
+using Game.Models;
 using Game.Models.Cards;
-using Game.Models.Data;
 using UnityEngine;
 
 public class Tester : MonoBehaviour

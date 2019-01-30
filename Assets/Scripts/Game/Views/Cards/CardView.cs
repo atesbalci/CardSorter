@@ -1,6 +1,8 @@
 ﻿using Game.Models.Cards;
+using Game.Views.Data;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 namespace Game.Views.Cards
 {
@@ -18,9 +20,15 @@ namespace Game.Views.Cards
         public bool Selected { get; set; }
 
         [SerializeField] private SpriteRenderer _cardTypeRenderer;
-        [SerializeField] private TextMeshPro _cardNoText;
-        [SerializeField] private Sprite[] _cardTypeSprites;
+        [SerializeField] private SpriteRenderer _cardNoRenderer;
         private Card _card;
+        private CardViewData _cardViewData;
+
+        [Inject]
+        public void Initialize(CardViewData cardViewData)
+        {
+            _cardViewData = cardViewData;
+        }
 
         public void Bind(Card card)
         {
@@ -39,32 +47,15 @@ namespace Game.Views.Cards
 
         private void RefreshCardVisuals()
         {
-            _cardTypeRenderer.sprite = _cardTypeSprites[(int)_card.CardType];
+            _cardTypeRenderer.sprite = _cardViewData.CardTypeSprites[(int) _card.CardType - 1];
+            _cardNoRenderer.sprite = _cardViewData.CardNoSprites[(int) _card.CardNo - 1];
             var color = (_card.CardType == CardType.Hearts || _card.CardType == CardType.Diamonds)
                 ? Color.red
                 : Color.black;
-            _cardNoText.color = color;
+            _cardNoRenderer.color = color;
             _cardTypeRenderer.color = color;
-            string cardNoText;
-            switch (_card.CardNo)
-            {
-                case CardNo.Ace:
-                    cardNoText = "A";
-                    break;
-                case CardNo.Jack:
-                    cardNoText = "J";
-                    break;
-                case CardNo.Queen:
-                    cardNoText = "Q";
-                    break;
-                case CardNo.King:
-                    cardNoText = "K";
-                    break;
-                default:
-                    cardNoText = ((int) _card.CardNo).ToString();
-                    break;
-            }
-            _cardNoText.text = cardNoText;
         }
+
+        public class Pool : MonoMemoryPool<CardView> { }
     }
 }

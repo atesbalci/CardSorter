@@ -1,0 +1,9 @@
+version: 2
+importPivots: 1
+tpsheetFileNames:
+- Assets/Textures/Cards/cards.tpsheet
+textureFileNames:
+- Assets/Textures/Cards/cards.png
+normalmapFileNames:
+- 
+enableDebugOutput: 0
