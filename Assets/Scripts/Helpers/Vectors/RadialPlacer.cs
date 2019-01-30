@@ -19,8 +19,8 @@ namespace Helpers.Vectors
             var angle = (startAngle + index * angleStep) * Mathf.Deg2Rad;
             return new PositionAnglePair
             {
-                Position = (Vector3)Center + new Vector3(Mathf.Sin(angle), Mathf.Cos(angle)) * Radius,
-                Angle = angle * Mathf.Rad2Deg
+                Position = Center + new Vector2(Mathf.Sin(angle), Mathf.Cos(angle)) * Radius,
+                Angle = -angle * Mathf.Rad2Deg
             };
         }
 
@@ -57,9 +57,9 @@ namespace Helpers.Vectors
         #endregion
     }
 
-    public class PositionAnglePair
+    public struct PositionAnglePair
     {
-        public Vector2 Position;
+        public Vector3 Position;
         public float Angle;
     }
 }

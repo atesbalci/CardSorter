@@ -23,13 +23,9 @@ namespace Game.Views.Cards
         private CardView.Pool _cardPool;
 
         [Inject]
-        public void Initialize(CardView.Pool cardPool)
+        public void Initialize(CardView.Pool cardPool, CardBatch hand)
         {
             _cardPool = cardPool;
-        }
-
-        public void Bind(CardBatch hand)
-        {
             _hand = hand;
             _cardViews = new Dictionary<Card, CardView>();
             _radialPlacer = GetComponent<RadialPlacer>();
@@ -40,23 +36,26 @@ namespace Game.Views.Cards
             _radialPlacer.OnAdapt += OnChange;
         }
 
+        // Only performs calculations while the mouse/touch is held down
         private void Update()
         {
-            var mousePos = (Vector2) _camera.ScreenToWorldPoint(Input.mousePosition);
-
-            if (Input.GetMouseButton(0) && _radialPlacer.GetDistanceFromPerimeter(mousePos) < 1f)
+            if (Input.GetMouseButton(0))
             {
-                var index = _radialPlacer.GetIndex(mousePos, _hand.Count);
-                if (Input.GetMouseButtonDown(0))
+                var mousePos = (Vector2) _camera.ScreenToWorldPoint(Input.mousePosition);
+                if (_radialPlacer.GetDistanceFromPerimeter(mousePos) < 1f)
                 {
-                    SelectedCard = _hand[index];
-                }
-                else if(SelectedCard != null)
-                {
-                    var selectedIndex = _hand.IndexOf(SelectedCard);
-                    if (selectedIndex != index)
+                    var index = _radialPlacer.GetIndex(mousePos, _hand.Count);
+                    if (Input.GetMouseButtonDown(0))
                     {
-                        _hand.SwitchIndex(selectedIndex, index);
+                        SelectedCard = _hand[index];
+                    }
+                    else if (SelectedCard != null)
+                    {
+                        var selectedIndex = _hand.IndexOf(SelectedCard);
+                        if (selectedIndex != index)
+                        {
+                            _hand.SwitchIndex(selectedIndex, index);
+                        }
                     }
                 }
             }
@@ -80,10 +79,14 @@ namespace Game.Views.Cards
             set
             {
                 if(_selectedCard == value) return;
-                _selectedCard = value;
-                foreach (var cardView in _cardViews)
+                if (_selectedCard != null)
                 {
-                    cardView.Value.Selected = cardView.Key == _selectedCard;
+                    _cardViews[SelectedCard].Selected = false;
+                }
+                _selectedCard = value;
+                if (value != null)
+                {
+                    _cardViews[SelectedCard].Selected = true;
                 }
             }
         }
@@ -105,8 +108,8 @@ namespace Game.Views.Cards
                 var card = _hand[i];
                 var cardView = _cardViews[card];
                 var pos = _radialPlacer.GetSlotPosAndAngle(i, _hand.Count);
-                cardView.TargetPosition = new Vector3(pos.Position.x, pos.Position.y, i * PerIndexZOffset);
-                cardView.TargetRotation = Quaternion.AngleAxis(-pos.Angle, Vector3.forward);
+                pos.Position.z = i * PerIndexZOffset;
+                cardView.Target = pos;
             }
         }
 

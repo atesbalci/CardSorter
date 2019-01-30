@@ -206,6 +206,19 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">card.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>0,0,1,1</rect>
+                <key>scale9Paddings</key>
+                <rect>0,0,1,1</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">clubs.png</key>
             <key type="filename">diamonds.png</key>
             <key type="filename">hearts.png</key>
@@ -242,6 +255,7 @@
             <filename>king.png</filename>
             <filename>queen.png</filename>
             <filename>spades.png</filename>
+            <filename>card.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

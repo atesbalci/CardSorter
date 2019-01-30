@@ -1,6 +1,7 @@
-﻿using Game.Models.Cards;
+﻿using DG.Tweening;
+using Game.Models.Cards;
 using Game.Views.Data;
-using TMPro;
+using Helpers.Vectors;
 using UnityEngine;
 using Zenject;
 
@@ -11,18 +12,16 @@ namespace Game.Views.Cards
     /// </summary>
     public class CardView : MonoBehaviour
     {
-        private const float LerpMultiplier = 5f;
-        private const float SelectedLerpMultiplier = 15f;
         private const float SelectedOffset = 0.5f;
-
-        public Vector3 TargetPosition { get; set; }
-        public Quaternion TargetRotation { get; set; }
-        public bool Selected { get; set; }
+        private const float TweenDuration = 0.5f;
 
         [SerializeField] private SpriteRenderer _cardTypeRenderer;
         [SerializeField] private SpriteRenderer _cardNoRenderer;
         private Card _card;
         private CardViewData _cardViewData;
+        private PositionAnglePair _target;
+        private Tween _tween;
+        private bool _selected;
 
         [Inject]
         public void Initialize(CardViewData cardViewData)
@@ -36,13 +35,25 @@ namespace Game.Views.Cards
             RefreshCardVisuals();
         }
 
-        private void Update()
+        public PositionAnglePair Target
         {
-            var lerpFactor = (Selected ? SelectedLerpMultiplier : LerpMultiplier) * Time.deltaTime;
-            transform.position = Vector3.Lerp(transform.position,
-                TargetPosition + (Selected ? SelectedOffset * Vector3.up : Vector3.zero),
-                lerpFactor);
-            transform.rotation = Quaternion.Lerp(transform.rotation, TargetRotation, lerpFactor);
+            get => _target;
+            set
+            {
+                _target = value;
+                RefreshTween();
+            }
+        }
+
+        public bool Selected
+        {
+            get => _selected;
+            set
+            {
+                if (_selected == value) return;
+                _selected = value;
+                RefreshTween();
+            }
         }
 
         private void RefreshCardVisuals()
@@ -54,6 +65,14 @@ namespace Game.Views.Cards
                 : Color.black;
             _cardNoRenderer.color = color;
             _cardTypeRenderer.color = color;
+        }
+
+        private void RefreshTween()
+        {
+            _tween.Kill();
+            _tween = DOTween.Sequence()
+                .Append(transform.DOMove(Target.Position + (Selected ? SelectedOffset * Vector3.up : Vector3.zero),
+                    TweenDuration)).Join(transform.DORotate(new Vector3(0f, 0f, Target.Angle), TweenDuration));
         }
 
         public class Pool : MonoMemoryPool<CardView> { }

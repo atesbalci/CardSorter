@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections;
 using Game.Models;
 using Game.Models.Cards;
-using Game.Views.Cards;
 using Helpers.Utilities;
 using UniRx;
 using UnityEngine;
+using Zenject;
 
 namespace Game.Controllers
 {
@@ -13,23 +12,16 @@ namespace Game.Controllers
     {
         private const float DrawFrequency = 0.1f;
 
-        public HandView HandView;
-
         private CardBatch _hand;
         private CardBatch _fullDeck;
         private CardBatch _testCaseDeck;
         private CardBatch _lastUsedDeck;
         private IDisposable _drawDisposable;
 
-        private void Start()
+        [Inject]
+        public void Initialize(CardBatch hand)
         {
-            Initialize();
-            StartGame();
-        }
-
-        private void Initialize()
-        {
-            _hand = new CardBatch();
+            _hand = hand;
             _fullDeck = new CardBatch();
             var typeAmt = Enum.GetValues(typeof(CardType)).Length;
             var noAmt = Enum.GetValues(typeof(CardNo)).Length;
@@ -54,8 +46,17 @@ namespace Game.Controllers
                 new Card(CardNo.Four, CardType.Hearts),
                 new Card(CardNo.Two, CardType.Spades),
             };
-            HandView.Bind(_hand);
             _lastUsedDeck = _fullDeck;
+        }
+
+        private void Start()
+        {
+            StartGame();
+        }
+
+        private void OnDestroy()
+        {
+            _drawDisposable?.Dispose();
         }
 
         /// <summary>
