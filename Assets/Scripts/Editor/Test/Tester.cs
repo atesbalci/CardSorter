@@ -132,6 +132,10 @@ namespace Editor.Test
             };
             Assert.True(result.IsEquivalent(expected, true));
         }
+
+        #endregion
+
+        #region Smart Group
         
         [Test]
         public void SmartGroups()
