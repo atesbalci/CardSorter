@@ -20,6 +20,11 @@
         {
             return CardType + " - " + CardNo;
         }
+
+        public bool Equals(Card card)
+        {
+            return card.CardNo == CardNo && card.CardType == CardType;
+        }
     }
 
     public enum CardNo

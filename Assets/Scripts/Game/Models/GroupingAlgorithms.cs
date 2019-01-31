@@ -56,7 +56,15 @@ namespace Game.Models
         {
             var candidates = cards.Where(c => c.CardType == card.CardType).OrderBy(c => c.CardNo).ToList();
             int min, max, index;
-            index = candidates.IndexOf(card);
+            index = 0;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                if (candidates[i].Equals(card))
+                {
+                    index = i;
+                    break;
+                }
+            }
             min = max = index;
             for (int i = index + 1; i < candidates.Count; i++)
             {
@@ -149,6 +157,93 @@ namespace Game.Models
                 cards.RemoveAt(0);
             }
             return bestGrouping;
+        }
+
+        #endregion
+
+        #region Helper Extension Methods
+
+        /// <summary>
+        /// Checks if two card collections are equivalent independently from how they are sorted.
+        /// </summary>
+        public static bool IsEquivalent(this ICollection<Card> a, ICollection<Card> b)
+        {
+            if (a.Count != b.Count)
+            {
+                return false;
+            }
+            
+            foreach (var card1 in a)
+            {
+                var contains = false;
+                foreach (var card2 in b)
+                {
+                    if (card1.Equals(card2))
+                    {
+                        contains = true;
+                        break;
+                    }
+                }
+
+                if (!contains)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        
+        /// <summary>
+        /// Checks if two card group lists are equivalent independently from how they are sorted.
+        /// </summary>
+        public static bool IsEquivalent(this IList<IList<Card>> a, IList<IList<Card>> b, bool inGroupOrdered)
+        {
+            if (a.Count != b.Count)
+            {
+                return false;
+            }
+            
+            foreach (var group1 in a)
+            {
+                var contains = false;
+                foreach (var group2 in b)
+                {
+                    if (inGroupOrdered ? group1.IsEquivalentInOrder(group2) : group1.IsEquivalent(group2))
+                    {
+                        contains = true;
+                        break;
+                    }
+                }
+
+                if (!contains)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        
+        /// <summary>
+        /// Checks if two card collections are equivalent.
+        /// </summary>
+        public static bool IsEquivalentInOrder(this IList<Card> a, IList<Card> b)
+        {
+            if (a.Count != b.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < a.Count; i++)
+            {
+                if (!a[i].Equals(b[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         #endregion
