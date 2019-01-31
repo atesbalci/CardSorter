@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Game.Models.Cards;
+using Helpers.Utilities;
 
 namespace Game.Models
 {
@@ -18,8 +18,15 @@ namespace Game.Models
         /// </summary>
         public static IList<Card> GetLargestSevenSevenSevenGroup(IList<Card> cards, Card card)
         {
-            var retVal = cards.Where(c => c.CardNo == card.CardNo).ToList();
-            return retVal.Count >= 3 ? retVal : new List<Card>();
+            var retVal = new List<Card>(4);
+            foreach (var c in cards)
+            {
+                if (c.CardNo == card.CardNo)
+                {
+                    retVal.Add(c);
+                }
+            }
+            return retVal.Count >= 3 ? retVal : new List<Card>(4);
         }
 
         /// <summary>
@@ -36,8 +43,14 @@ namespace Game.Models
                 {
                     for (var i = 0; i < largestGroup.Count; i++)
                     {
-                        var newList = largestGroup.ToList();
-                        newList.RemoveAt(i);
+                        var newList = new List<Card>(3);
+                        for (int n = 0; n < largestGroup.Count; n++)
+                        {
+                            if (n != i)
+                            {
+                                newList.Add(largestGroup[n]);
+                            }
+                        }
                         retVal.Add(newList);
                     }
                 }
@@ -54,7 +67,22 @@ namespace Game.Models
         /// </summary>
         public static IList<Card> GetLargestOneTwoThreeGroup(IList<Card> cards, Card card)
         {
-            var candidates = cards.Where(c => c.CardType == card.CardType).OrderBy(c => c.CardNo).ToList();
+            var candidates = new List<Card>();
+            foreach (var c in cards)
+            {
+                if (c.CardType == card.CardType)
+                {
+                    int i;
+                    for (i = 0; i < candidates.Count; i++)
+                    {
+                        if (candidates[i].CardNo > c.CardNo)
+                        {
+                            break;
+                        }
+                    }
+                    candidates.Insert(i, c);
+                }
+            }
             int min, max, index;
             index = 0;
             for (int i = 0; i < candidates.Count; i++)
@@ -97,7 +125,7 @@ namespace Game.Models
         /// </summary>
         public static IList<IList<Card>> GetAllOneTwoThreeGroups(IList<Card> cards, Card card)
         {
-            return GetOneTwoThreePermutations(GetLargestOneTwoThreeGroup(cards, card).ToList());
+            return GetOneTwoThreePermutations(GetLargestOneTwoThreeGroup(cards, card).CloneList());
         }
 
         /// <summary>
@@ -134,14 +162,20 @@ namespace Game.Models
         private static CardGrouping GetSmartGroups(CardGrouping cardGrouping)
         {
             var bestGrouping = cardGrouping;
-            var cards = cardGrouping.Ungrouped.ToList();
+            var cards = cardGrouping.Ungrouped.CloneList();
             while (cards.Count > 0)
             {
                 var curCard = cards[0];
-                var possibilities = GetAllOneTwoThreeGroups(cards, curCard)
-                    .Union(GetAllSevenSevenSevenGroups(cards, curCard));
-                foreach (var group in possibilities)
+                var oneTwoThreeGroups = GetAllOneTwoThreeGroups(cards, curCard);
+                var sevenSevenSevenGroups = GetAllSevenSevenSevenGroups(cards, curCard);
+                var totalPossibilities = oneTwoThreeGroups.Count + sevenSevenSevenGroups.Count;
+                
+                for (int i = 0; i < totalPossibilities; i++)
                 {
+                    var group = i < oneTwoThreeGroups.Count
+                        ? oneTwoThreeGroups[i]
+                        : sevenSevenSevenGroups[i - oneTwoThreeGroups.Count];
+                    
                     var grouping = cardGrouping.Clone();
                     grouping.Groups.Add(group);
                     foreach (var card in group)
@@ -281,7 +315,18 @@ namespace Game.Models
             return retVal;
         }
 
-        public int UngroupedValue => Ungrouped.Sum(card => card.Value);
+        public int UngroupedValue
+        {
+            get
+            {
+                var sum = 0;
+                foreach (var card in Ungrouped)
+                {
+                    sum += card.Value;
+                }
+                return sum;
+            }
+        }
 
         public CardGrouping Clone()
         {

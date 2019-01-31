@@ -19,5 +19,16 @@ namespace Helpers.Utilities
             list.RemoveAt(randomIndex);
             return retVal;
         }
+
+        public static List<T> CloneList<T>(this IList<T> list)
+        {
+            var retVal = new List<T>(list.Count);
+            foreach (var ele in list)
+            {
+                retVal.Add(ele);
+            }
+
+            return retVal;
+        }
     }
 }
