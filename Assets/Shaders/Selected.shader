@@ -40,6 +40,8 @@
             {
                 float4 vertex : SV_POSITION;
 				float2 texcoord : TEXCOORD0;
+				float2 time : TEXCOORD1;
+				fixed4 color : COLOR;
             };
 
             v2f vert (appdata v)
@@ -47,16 +49,16 @@
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
 				o.texcoord = v.uv;
+				o.time.x = (_Time.y - _LastSelectTime) / _AnimationDuration; // Animation time
+				o.time.y = min(o.time.x, 1); // Clamped animation time
+				o.color = lerp(_StartColor, _EndColor, o.time.y);
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target
             {
-				float time = (_Time.y - _LastSelectTime) / _AnimationDuration;
-				float timeClamped = min(time, 1);
-                fixed4 col = lerp(_StartColor, _EndColor, timeClamped);
 				float glowPosition = i.texcoord.y + (i.texcoord.x - 0.5) * _GlowXModifier;
-				return col + max(1 - distance(time, glowPosition) / _GlowWidth, 0) * fixed4(1, 1, 1, 0);
+				return i.color + max(1 - distance(i.time.x, glowPosition) / _GlowWidth, 0) * fixed4(1, 1, 1, 0);
             }
             ENDCG
         }
