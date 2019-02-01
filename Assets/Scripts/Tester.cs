@@ -24,10 +24,11 @@ public class Tester : MonoBehaviour
 
         var grouping = GroupingAlgorithms.GetSmartGroups(cardBatch);
         var builder = new StringBuilder();
-        for (int i = 0; i < grouping.Groups.Count; i++)
+        var i = 0;
+        foreach (var group in grouping.Groups)
         {
-            builder.AppendLine("Group " + (i + 1) + ":");
-            var group = grouping.Groups[i];
+            i++;
+            builder.AppendLine("Group " + i + ":");
             foreach (var card in group)
             {
                 builder.AppendLine(card.ToString());

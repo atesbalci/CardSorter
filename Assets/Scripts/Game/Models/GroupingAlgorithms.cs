@@ -26,7 +26,7 @@ namespace Game.Models
                     retVal.Add(c);
                 }
             }
-            return retVal.Count >= 3 ? retVal : new List<Card>(4);
+            return retVal.Count >= 3 ? retVal : new List<Card>(0);
         }
 
         /// <summary>
@@ -165,7 +165,8 @@ namespace Game.Models
             var cards = cardGrouping.Ungrouped.CloneList();
             while (cards.Count > 0)
             {
-                var curCard = cards[0];
+                var index = cards.Count - 1;
+                var curCard = cards[index];
                 var oneTwoThreeGroups = GetAllOneTwoThreeGroups(cards, curCard);
                 var sevenSevenSevenGroups = GetAllSevenSevenSevenGroups(cards, curCard);
                 var totalPossibilities = oneTwoThreeGroups.Count + sevenSevenSevenGroups.Count;
@@ -188,7 +189,7 @@ namespace Game.Models
                         bestGrouping = grouping;
                     }
                 }
-                cards.RemoveAt(0);
+                cards.RemoveAt(index);
             }
             return bestGrouping;
         }
@@ -231,7 +232,7 @@ namespace Game.Models
         /// <summary>
         /// Checks if two card group lists are equivalent independently from how they are sorted.
         /// </summary>
-        public static bool IsEquivalent(this IList<IList<Card>> a, IList<IList<Card>> b, bool inGroupOrdered)
+        public static bool IsEquivalent(this ICollection<IList<Card>> a, ICollection<IList<Card>> b, bool inGroupOrdered)
         {
             if (a.Count != b.Count)
             {
@@ -287,13 +288,13 @@ namespace Game.Models
 
     public class CardGrouping
     {
-        public IList<IList<Card>> Groups { get; }
+        public ICollection<IList<Card>> Groups { get; }
         public IList<Card> Ungrouped { get; }
 
         public CardGrouping()
         {
-            Groups = new List<IList<Card>>();
-            Ungrouped = new List<Card>();
+            Groups = new LinkedList<IList<Card>>();
+            Ungrouped = new List<Card>(11);
         }
 
         public CardGrouping(IEnumerable<Card> cards) : this()
