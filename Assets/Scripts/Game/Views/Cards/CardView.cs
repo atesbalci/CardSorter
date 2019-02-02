@@ -22,13 +22,16 @@ namespace Game.Views.Cards
         private Card _card;
         private CardViewData _cardViewData;
         private PositionAnglePair _target;
-        private Tween _tween;
+        private Tweener _movementTween;
+        private Tweener _rotationTween;
         private bool _selected;
 
         [Inject]
         public void Initialize(CardViewData cardViewData)
         {
             _cardViewData = cardViewData;
+            _movementTween = transform.DOMove(transform.position, TweenDuration).SetAutoKill(false);
+            _rotationTween = transform.DORotate(transform.eulerAngles, TweenDuration).SetAutoKill(false);
         }
 
         /// <summary>
@@ -86,10 +89,8 @@ namespace Game.Views.Cards
         /// </summary>
         private void RefreshTween()
         {
-            _tween.Kill();
-            _tween = DOTween.Sequence()
-                .Append(transform.DOMove(Target.Position + (Selected ? SelectedOffset * Vector3.up : Vector3.zero),
-                    TweenDuration)).Join(transform.DORotate(new Vector3(0f, 0f, Target.Angle), TweenDuration));
+            _movementTween.ChangeValues(transform.position ,Target.Position + (Selected ? SelectedOffset * Vector3.up : Vector3.zero)).Play();
+            _rotationTween.ChangeValues(transform.eulerAngles, new Vector3(0f, 0f, Target.Angle)).Play();
         }
 
         private void RefreshSelected()

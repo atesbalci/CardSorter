@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Game.Models.Cards;
 using Helpers.Vectors;
 using UnityEngine;
@@ -36,26 +36,26 @@ namespace Game.Views.Cards
             _radialPlacer.OnAdapt += OnChange;
         }
 
-        // Only performs calculations while the mouse/touch is held down
+        // Only performs calculations while the mouse/touch is held down or when a card is selected
         private void Update()
         {
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButton(0) && (SelectedCard != null || Input.GetMouseButtonDown(0)))
             {
                 var mousePos = (Vector2) _camera.ScreenToWorldPoint(Input.mousePosition);
-                if (_radialPlacer.GetDistanceFromPerimeter(mousePos) < 1f)
+                var index = _radialPlacer.GetIndex(mousePos, _hand.Count);
+                if (Input.GetMouseButtonDown(0))
                 {
-                    var index = _radialPlacer.GetIndex(mousePos, _hand.Count);
-                    if (Input.GetMouseButtonDown(0))
+                    if (_radialPlacer.GetDistanceFromPerimeter(mousePos) < 1f)
                     {
                         SelectedCard = _hand[index];
                     }
-                    else if (SelectedCard != null)
+                }
+                else if (SelectedCard != null)
+                {
+                    var selectedIndex = _hand.IndexOf(SelectedCard);
+                    if (selectedIndex != index)
                     {
-                        var selectedIndex = _hand.IndexOf(SelectedCard);
-                        if (selectedIndex != index)
-                        {
-                            _hand.SwitchIndex(selectedIndex, index);
-                        }
+                        _hand.SwitchIndex(selectedIndex, index);
                     }
                 }
             }
