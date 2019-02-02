@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace Game.Views.Data
 {
+    /// <summary>
+    /// A data class for CardView to access required common data among card views.
+    /// </summary>
     public class CardViewData
     {
         private readonly ReadOnlyCollection<Sprite> _cardTypeSprites;

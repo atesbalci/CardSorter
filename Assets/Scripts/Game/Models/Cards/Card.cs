@@ -21,6 +21,9 @@
             return CardType + " - " + CardNo;
         }
 
+        /// <summary>
+        /// Checks if two cards are value-wise equal.
+        /// </summary>
         public bool Equals(Card card)
         {
             return card.CardNo == CardNo && card.CardType == CardType;

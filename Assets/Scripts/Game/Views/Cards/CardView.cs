@@ -31,6 +31,9 @@ namespace Game.Views.Cards
             _cardViewData = cardViewData;
         }
 
+        /// <summary>
+        /// Binds to the card and refreshes it's view.
+        /// </summary>
         public void Bind(Card card)
         {
             _card = card;
@@ -39,6 +42,9 @@ namespace Game.Views.Cards
             RefreshSelected();
         }
 
+        /// <summary>
+        /// Current movement target of the card view.
+        /// </summary>
         public PositionAnglePair Target
         {
             get => _target;
@@ -49,6 +55,9 @@ namespace Game.Views.Cards
             }
         }
 
+        /// <summary>
+        /// Determines if the card is selected.
+        /// </summary>
         public bool Selected
         {
             get => _selected;
@@ -72,6 +81,9 @@ namespace Game.Views.Cards
             _cardTypeRenderer.color = color;
         }
 
+        /// <summary>
+        /// Runs the movement tween.
+        /// </summary>
         private void RefreshTween()
         {
             _tween.Kill();
@@ -86,6 +98,9 @@ namespace Game.Views.Cards
             _selectedCardBack.SetActive(Selected);
         }
 
+        /// <summary>
+        /// Pool class for card game objects.
+        /// </summary>
         public class Pool : MonoMemoryPool<CardView> { }
     }
 }
