@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Editor.Test
 {
-    public class Tester
+    public class GroupingAlgorithmsTester
     {
         private IList<Card> GenerateTestCase()
         {

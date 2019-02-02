@@ -151,47 +151,96 @@ namespace Game.Models
         /// Finds the smart group by testing and mixing both 1-2-3 sorting and 7-7-7 sorting. 
         /// Returns the grouping with the least total value of ungrouped cards.
         /// </summary>
-        public static CardGrouping GetSmartGroups(IEnumerable<Card> cards)
+        public static CardGrouping GetSmartGroups(IList<Card> cards)
         {
-            return GetSmartGroups(new CardGrouping(cards));
+            var allPossibleGroups = new List<IList<Card>>();
+
+            var cardsOneTwoThreeClone = cards.CloneList();
+            while (cardsOneTwoThreeClone.Count > 0)
+            {
+                var card = cardsOneTwoThreeClone[0];
+                var oneTwoThreeGroups = GetAllOneTwoThreeGroups(cards, card);
+                if (oneTwoThreeGroups.Count > 0)
+                {
+                    var largestGroup = oneTwoThreeGroups[0];
+                    cardsOneTwoThreeClone.RemoveAll(largestGroup.Contains);
+                    allPossibleGroups.AddRange(oneTwoThreeGroups);
+                }
+                else
+                {
+                    cardsOneTwoThreeClone.RemoveAt(0);
+                }
+            }
+            
+            var cardsSevenSevenSevenClone = cards.CloneList();
+            while (cardsSevenSevenSevenClone.Count > 0)
+            {
+                var card = cardsSevenSevenSevenClone[0];
+                var sevenSevenSevenGroups = GetAllSevenSevenSevenGroups(cards, card);
+                if (sevenSevenSevenGroups.Count > 0)
+                {
+                    var largestGroup = sevenSevenSevenGroups[0];
+                    cardsSevenSevenSevenClone.RemoveAll(largestGroup.Contains);
+                    allPossibleGroups.AddRange(sevenSevenSevenGroups);
+                }
+                else
+                {
+                    cardsSevenSevenSevenClone.RemoveAt(0);
+                }
+            }
+
+            var currentGrouping = new GroupingCandidate();
+            var bestGrouping = new GroupingCandidate();
+            
+            FindBestGrouping(allPossibleGroups, currentGrouping, bestGrouping);
+            
+            var retVal = new CardGrouping(cards);
+            foreach (var group in bestGrouping.Groups)
+            {
+                retVal.Groups.Add(group);
+                foreach (var card in group)
+                {
+                    retVal.Ungrouped.Remove(card);
+                }
+            }
+
+            return retVal;
         }
 
         /// <summary>
         /// Recursive function used by GetSmartGroups.
         /// </summary>
-        private static CardGrouping GetSmartGroups(CardGrouping cardGrouping)
+        private static void FindBestGrouping(IList<IList<Card>> allPossibleGroups, GroupingCandidate currentGrouping, GroupingCandidate bestGrouping)
         {
-            var bestGrouping = cardGrouping;
-            var cards = cardGrouping.Ungrouped.CloneList();
-            while (cards.Count > 0)
+            foreach (var possibleGroup in allPossibleGroups)
             {
-                var index = cards.Count - 1;
-                var curCard = cards[index];
-                var oneTwoThreeGroups = GetAllOneTwoThreeGroups(cards, curCard);
-                var sevenSevenSevenGroups = GetAllSevenSevenSevenGroups(cards, curCard);
-                var totalPossibilities = oneTwoThreeGroups.Count + sevenSevenSevenGroups.Count;
-                
-                for (int i = 0; i < totalPossibilities; i++)
+                var compatible = true;
+                for (var i = 0; i < currentGrouping.Groups.Count; i++)
                 {
-                    var group = i < oneTwoThreeGroups.Count
-                        ? oneTwoThreeGroups[i]
-                        : sevenSevenSevenGroups[i - oneTwoThreeGroups.Count];
-                    
-                    var grouping = cardGrouping.Clone();
-                    grouping.Groups.Add(group);
-                    foreach (var card in group)
+                    if (!currentGrouping.Groups[i].IsCompatible(possibleGroup))
                     {
-                        grouping.Ungrouped.Remove(card);
-                    }
-                    grouping = GetSmartGroups(grouping);
-                    if (bestGrouping == null || bestGrouping.UngroupedValue > grouping.UngroupedValue)
-                    {
-                        bestGrouping = grouping;
+                        compatible = false;
+                        break;
                     }
                 }
-                cards.RemoveAt(index);
+
+                if (compatible)
+                {
+                    currentGrouping.Push(possibleGroup);
+                    FindBestGrouping(allPossibleGroups, currentGrouping, bestGrouping);
+
+                    if (currentGrouping.Value > bestGrouping.Value)
+                    {
+                        bestGrouping.Clear();
+                        foreach (var group in currentGrouping.Groups)
+                        {
+                            bestGrouping.Push(group);
+                        }
+                    }
+                    
+                    currentGrouping.Pop();
+                }
             }
-            return bestGrouping;
         }
 
         #endregion
@@ -281,6 +330,71 @@ namespace Game.Models
             return true;
         }
 
+        /// <summary>
+        /// Checks if two card lists contain all different cards.
+        /// </summary>
+        private static bool IsCompatible(this IList<Card> a, IList<Card> b)
+        {
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (b.Contains(a[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Calculates the sum of values of the cards in a list.
+        /// </summary>
+        private static int GetValue(this IList<Card> cards)
+        {
+            var sum = 0;
+            for (var i = 0; i < cards.Count; i++)
+            {
+                sum += cards[i].Value;
+            }
+
+            return sum;
+        }
+
+        #endregion
+
+        #region Nested Classes
+
+        private class GroupingCandidate
+        {
+            public int Value { get; private set; }
+            public IList<IList<Card>> Groups { get; }
+
+            public GroupingCandidate()
+            {
+                Groups = new List<IList<Card>>();
+                Value = 0;
+            }
+
+            public void Push(IList<Card> group)
+            {
+                Groups.Add(group);
+                Value += group.GetValue();
+            }
+
+            public void Pop()
+            {
+                var lastIndex = Groups.Count - 1;
+                Value -= Groups[lastIndex].GetValue();
+                Groups.RemoveAt(lastIndex);
+            }
+
+            public void Clear()
+            {
+                Groups.Clear();
+                Value = 0;
+            }
+        }
+
         #endregion
     }
 
@@ -294,7 +408,7 @@ namespace Game.Models
         public CardGrouping()
         {
             Groups = new LinkedList<IList<Card>>();
-            Ungrouped = new List<Card>(11);
+            Ungrouped = new List<Card>();
         }
 
         public CardGrouping(IEnumerable<Card> cards) : this()
